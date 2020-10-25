@@ -23,31 +23,55 @@
 </template>
 
 <script>
-  export default {
-    name: 'AddSmoothie',
-    data() {
-      return {
-        title: null,
-        another: null,
-        ingredients: [],
-        feedback: null
+import db from '../firebase/init.js'
+import slugify from 'slugify'
+
+
+export default {
+  name: 'AddSmoothie',
+  data() {
+    return {
+      title: null,
+      another: null,
+      ingredients: [],
+      feedback: null,
+      slug: null
+    }
+  },
+  methods: {
+    AddSmoothie() {
+      if (this.title) {
+        this.feedback = null
+        // create a slug
+        this.slug = slugify(this.title, {
+          replacement: '-',
+          remove: /[$*_+~.()'"!\-:@]/g,
+          lower: true
+        })
+        db.collection('smoothies').add({
+          title: this.title,
+          ingredients: this.ingredients,
+          slug: this.slug
+        }).then(() => {
+          this.$router.push({ name: 'Index'})
+        }).catch(err => {
+          console.log(err)
+        })
+      } else {
+        this.feedback = 'タイトルを入力してください'
       }
     },
-    methods: {
-      AddSmoothie() {
-        console.log(this.title, this.ingredients)
-      },
-      addIng() {
-        if (this.another) {
-          this.ingredients.push(this.another)
-          this.another = null
-          this.feedback = null
-        } else {
-          this.feedback = 'You must enter a value to add an ingredient.'
-        }
+    addIng() {
+      if (this.another) {
+        this.ingredients.push(this.another)
+        this.another = null
+        this.feedback = null
+      } else {
+        this.feedback = '成分を追加するには値を入力してください'
       }
     }
   }
+}
 </script>
 
 <style>
